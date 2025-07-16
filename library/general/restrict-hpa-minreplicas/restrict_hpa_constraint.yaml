@@ -1,15 +1,15 @@
 apiVersion: constraints.gatekeeper.sh/v1beta1
-kind: K8sDeploymentReplicaLimit
+kind: K8sHPAMinReplicaLimit
 metadata:
-  name: restrict-deployment-replicas
+  name: restrict-hpa-minreplicas
 spec:
   match:
     kinds:
-      - apiGroups: ["apps"]
-        kinds: ["Deployment"]
+      - apiGroups: ["autoscaling"]
+        kinds: ["HorizontalPodAutoscaler"]
     excludedNamespaces:
       - kube-system
       - gatekeeper-system
       - azure-arc
   parameters:
-    maxReplicas: 5
+    maxMinReplicas: 5
