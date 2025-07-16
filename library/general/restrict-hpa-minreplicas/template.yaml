@@ -1,0 +1,25 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8sdeploymentreplicalimit
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sDeploymentReplicaLimit
+      validation:
+        openAPIV3Schema:
+          properties:
+            maxReplicas:
+              type: integer
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sdeploymentreplicalimit
+
+        violation[{"msg": msg}] {
+          input.review.kind.kind == "Deployment"
+          input.review.object.spec.replicas > input.parameters.maxReplicas
+          msg := sprintf("Deployment replicas (%v) exceed the allowed maximum of %v. Please use HorizontalPodAutoscaler (HPA) for scaling.", [input.review.object.spec.replicas, input.parameters.maxReplicas])
+        }
+    maxReplicas: 5
