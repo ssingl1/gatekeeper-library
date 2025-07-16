@@ -1,31 +1,32 @@
 apiVersion: test.gatekeeper.sh/v1alpha1
 kind: ConstraintTemplateSuite
 metadata:
-  name: deployment-replica-limit-suite
+  name: hpa-minreplica-limit-suite
 tests:
-  - name: deny-deployment-with-too-many-replicas
-    template: k8sdeploymentreplicalimit
+  - name: deny-hpa-with-too-high-minreplicas
+    template: k8shpaminreplicalimit
     constraint: ../constraint.yaml
     cases:
-      - name: too-many-replicas
+      - name: too-high-minreplicas
         object: |
-          apiVersion: apps/v1
-          kind: Deployment
+          apiVersion: autoscaling/v2
+          kind: HorizontalPodAutoscaler
           metadata:
-            name: test-deployment
+            name: test-hpa
             namespace: default
           spec:
-            replicas: 10
-            selector:
-              matchLabels:
-                app: test
-            template:
-              metadata:
-                labels:
-                  app: test
-              spec:
-                containers:
-                  - name: nginx
-                    image: nginx
+            scaleTargetRef:
+              apiVersion: apps/v1
+              kind: Deployment
+              name: test-deployment
+            minReplicas: 10
+            maxReplicas: 50
+            metrics:
+              - type: Resource
+                resource:
+                  name: cpu
+                  target:
+                    type: Utilization
+                    averageUtilization: 50
         violations:
-          - msg: "Deployment replicas (10) exceed the allowed maximum of 5. Please use HorizontalPodAutoscaler (HPA) for scaling."
+          - msg: "HPA minReplicas (10) exceeds the allowed maximum of 5."
