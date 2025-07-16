@@ -10,7 +10,7 @@ spec:
       validation:
         openAPIV3Schema:
           properties:
-            min:
+            max:
               type: integer
   targets:
     - target: admission.k8s.gatekeeper.sh
@@ -19,6 +19,14 @@ spec:
 
         violation[{"msg": msg}] {
           input.review.kind.kind == "HorizontalPodAutoscaler"
-          input.review.object.spec.minReplicas > input.parameters.min
-          msg := sprintf("HPA minReplicas (%v) exceeds the allowed maximum of %v.", [input.review.object.spec.minReplicas, input.parameters.min])
+          minreplicas := input.review.object.spec.minReplicas
+          minreplicas < 2
+          msg := sprintf("HPA minReplicas (%v) is below the allowed minimum of 2.", [minreplicas])
+        }
+
+        violation[{"msg": msg}] {
+          input.review.kind.kind == "HorizontalPodAutoscaler"
+          minreplicas := input.review.object.spec.minReplicas
+          minreplicas > input.parameters.max
+          msg := sprintf("HPA minReplicas (%v) exceeds the allowed maximum of %v.", [minreplicas, input.parameters.max])
         }
