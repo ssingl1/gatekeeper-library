@@ -1,0 +1,3 @@
+resources:
+  - template.yaml
+  - restrict_hpa_constraint.yaml
