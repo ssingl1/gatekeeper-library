@@ -22,4 +22,3 @@ spec:
           input.review.object.spec.replicas > input.parameters.maxReplicas
           msg := sprintf("Deployment replicas (%v) exceed the allowed maximum of %v. Please use HorizontalPodAutoscaler (HPA) for scaling.", [input.review.object.spec.replicas, input.parameters.maxReplicas])
         }
-    maxReplicas: 5
