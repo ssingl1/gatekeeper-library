@@ -1,0 +1,31 @@
+apiVersion: test.gatekeeper.sh/v1alpha1
+kind: ConstraintTemplateSuite
+metadata:
+  name: deployment-replica-limit-suite
+tests:
+  - name: deny-deployment-with-too-many-replicas
+    template: k8sdeploymentreplicalimit
+    constraint: ../constraint.yaml
+    cases:
+      - name: too-many-replicas
+        object: |
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: test-deployment
+            namespace: default
+          spec:
+            replicas: 10
+            selector:
+              matchLabels:
+                app: test
+            template:
+              metadata:
+                labels:
+                  app: test
+              spec:
+                containers:
+                  - name: nginx
+                    image: nginx
+        violations:
+          - msg: "Deployment replicas (10) exceed the allowed maximum of 5. Please use HorizontalPodAutoscaler (HPA) for scaling."
